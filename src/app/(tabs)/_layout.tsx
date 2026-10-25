@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import tabs from "@/constants/data";
+import { data as tabs } from "@/constants/data";
 import { Image, Pressable, Text, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { cssInterop } from 'nativewind';
@@ -92,8 +92,12 @@ export default function TabLayout() {
                         title: tab.title,
                         headerShown: false,
                         tabBarIcon: ({ focused }) => (
-                            <TabIcon focused={focused} icon={tab.icon} iconTitle={tab.title} />
-                        )
+                            <TabIcon
+                                focused={focused}
+                                icon={tab.icon}
+                                iconTitle={tab.title}
+                            />
+                        ),
                     }}
                 />
             ))}
