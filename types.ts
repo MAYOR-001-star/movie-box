@@ -13,30 +13,69 @@ export interface TabsProps {
     iconTitle: string;
 }
 
-export interface Movie {
-    id: string;
-    title: string;
-    poster: string;
-    rating: number;
-    year: number;
+export interface TVMazeShow {
+    id: number;
+    url?: string;
+    name: string;
+    type: string;
+    language: string;
     genres: string[];
-    category: string;
+    status: string;
+    runtime: number | null;
+    averageRuntime?: number | null;
+    premiered: string;
+    ended?: string | null;
+    officialSite?: string | null;
+    schedule?: {
+        time: string;
+        days: string[];
+    };
+    rating: {
+        average: number | null;
+    };
+    weight?: number;
+    network?: {
+        id: number;
+        name: string;
+        country?: {
+            name: string;
+            code: string;
+            timezone: string;
+        };
+        officialSite?: string | null;
+    } | null;
+    webChannel?: {
+        id: number;
+        name: string;
+        country?: any;
+        officialSite?: string | null;
+    } | null;
+    image: {
+        medium: string;
+        original: string;
+    };
+    summary: string;
+    updated?: number;
+    savedAt?: string;
+    // Hardcoded UI properties we cannot do without
+    special?: boolean;
 }
 
-export interface MovieDetails extends Movie {
-    backdrop: string;
-    voteCount: string;
-    seasons: number;
-    certification: string;
-    duration: string;
-    overview: string;
-    releaseDate: {
-        label: string;
-        status: string;
+export interface TVMazePerson {
+    id: number;
+    url?: string;
+    name: string;
+    character?: string;
+    country?: {
+        name: string;
+        code: string;
+        timezone: string;
+    } | null;
+    birthday?: string | null;
+    deathday?: string | null;
+    gender?: string;
+    image: {
+        medium: string;
+        original: string;
     };
-    countries: string[];
-    budget: string;
-    revenue: string;
-    tagline: string;
-    productionCompanies: string[];
 }

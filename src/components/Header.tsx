@@ -1,9 +1,9 @@
-import {View, Image, TextInput, ScrollView} from 'react-native'
-import React, {useState} from 'react'
-import {icons} from "@/constants/icons";
+import { View, Image, TextInput, ScrollView, TouchableOpacity } from 'react-native'
+import React, { useState } from 'react'
+import { icons } from "@/constants/icons";
 
-const Header = () => {
-    const [text, setText] = useState('');
+const Header = ({search}: {search?: boolean}) => {
+    const [searchQuery, setSearchQuery] = useState('');
 
     return (
         <View>
@@ -17,7 +17,7 @@ const Header = () => {
                     <View className="mt-[10px] mb-[24px] mx-auto w-full flex flex-row justify-center">
                         <Image source={icons.logo} className="w-[59px] h-[43px]"/>
                     </View>
-                    <View
+                    {search && <View
                         className="px-[14px] py-[8px] text-[14px] mb-[50px] flex flex-row justify-left gap-[10px] items-center bg-[#0F0D23] rounded-[30px]">
                         <View>
                             <Image source={icons.search} tintColor="#AB8BFF" className="size-[1rem]"/>
@@ -25,11 +25,11 @@ const Header = () => {
                         <TextInput
                             placeholder="Search through 300+ movies online"
                             placeholderTextColor="#A8B5DB"
-                            value={text}
-                            onChangeText={(newValue) => setText(newValue)}
+                            value={searchQuery}
+                            onChangeText={(newValue) => setSearchQuery(newValue)}
                             className="rounded-[30px] text-white w-full"
                         />
-                    </View>
+                    </View>}
                 </View>
             </ScrollView>
         </View>

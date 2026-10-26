@@ -3,14 +3,18 @@ import { View, Text, Image, ScrollView, TouchableOpacity } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { icons } from '@/constants/icons';
-import { movieDetails } from '@/constants/data';
+import { movieDetails, savedShows, moviesss, movies } from '@/constants/data';
 import { LinearGradient } from 'expo-linear-gradient';
 
 const MovieDetails = () => {
     const { id } = useLocalSearchParams<{ id: string }>();
 
-    // Use movieDetails from constants/data.ts
-    const movie = movieDetails;
+    // Dynamically find show by ID from TVMaze mock datasets, falling back to movieDetails
+    const movie = 
+        savedShows.find((s) => String(s.id) === String(id)) ||
+        movies.find((s) => String(s.id) === String(id)) ||
+        moviesss.find((s) => String(s.id) === String(id)) ||
+        movieDetails;
 
     // Clean HTML tags from TVMaze summary string
     const cleanSummary = movie.summary 
@@ -19,6 +23,11 @@ const MovieDetails = () => {
 
     // Extract year from premiered date (e.g., '2013-06-24' -> '2013')
     const releaseYear = movie.premiered ? movie.premiered.split('-')[0] : '';
+    const platformName = movie.network?.name || (movie as any).webChannel?.name;
+
+    const posterUri = movie.image?.original || 
+        movie.image?.medium || 
+        (typeof movie.image === 'string' ? movie.image : null);
 
     return (
         <SafeAreaView className='bg-[#0A071E] flex-1'>
@@ -26,7 +35,7 @@ const MovieDetails = () => {
                 {/* 1. Header Banner Image with Floating Back Button */}
                 <View className='relative w-full h-[380px]'>
                     <Image
-                        source={movie.image?.original ? { uri: movie.image.original } : icons.coverpic}
+                        source={posterUri ? { uri: posterUri } : icons.coverpic}
                         className='w-full h-full'
                         resizeMode='cover'
                     />
@@ -78,10 +87,10 @@ const MovieDetails = () => {
                             </View>
                         )}
 
-                        {movie.network?.name && (
+                        {platformName && (
                             <View className='rounded-[6px] px-3 py-2 bg-[#221F3D] flex-row items-center gap-1.5 border border-[#2E2854]'>
-                                <Text className='text-[#A8B5DB] text-[12px]'>Network:</Text>
-                                <Text className='text-white text-[13px] font-semibold'>{movie.network.name}</Text>
+                                <Text className='text-[#A8B5DB] text-[12px]'>Platform:</Text>
+                                <Text className='text-white text-[13px] font-semibold'>{platformName}</Text>
                             </View>
                         )}
                     </View>
