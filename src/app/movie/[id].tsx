@@ -1,32 +1,116 @@
-import React from 'react';
-import { View, Text, Image, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, Image, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { icons } from '@/constants/icons';
 import { movieDetails, savedShows, moviesss, movies } from '@/constants/data';
 import { LinearGradient } from 'expo-linear-gradient';
+import { TVMazeShow, TVMazeCastMember } from '@/types';
 
 const MovieDetails = () => {
     const { id } = useLocalSearchParams<{ id: string }>();
 
-    // Dynamically find show by ID from TVMaze mock datasets, falling back to movieDetails
-    const movie = 
+    const [singleMovie, setSingleMovie] = useState<TVMazeShow | null>(null);
+    const [movieCast, setMovieCast] = useState<TVMazeCastMember[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (!id) return;
+
+        const fetchData = async () => {
+            try {
+                setIsLoading(true);
+                setError(null);
+
+                const [movieRes, castRes] = await Promise.all([
+                    fetch(`https://api.tvmaze.com/shows/${id}`),
+                    fetch(`https://api.tvmaze.com/shows/${id}/cast`),
+                ]);
+
+                if (!movieRes.ok) {
+                    throw new Error("Failed to fetch movie details");
+                }
+
+                const movieData: TVMazeShow = await movieRes.json();
+                setSingleMovie(movieData);
+
+                if (castRes.ok) {
+                    const castData: TVMazeCastMember[] = await castRes.json();
+                    setMovieCast(castData);
+                }
+            } catch (err) {
+                if (err instanceof Error) {
+                    setError(err.message);
+                } else {
+                    setError("An unexpected error occurred");
+                }
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchData();
+    }, [id]);
+
+    if (isLoading) {
+        return (
+            <SafeAreaView className="flex-1 bg-[#0A071E] items-center justify-center">
+                <ActivityIndicator color="#b093ff" size="large" />
+            </SafeAreaView>
+        );
+    }
+
+    // Use fetched movie, or fall back to local mock datasets
+    const movie: TVMazeShow | null =
+        singleMovie ||
         savedShows.find((s) => String(s.id) === String(id)) ||
         movies.find((s) => String(s.id) === String(id)) ||
         moviesss.find((s) => String(s.id) === String(id)) ||
-        movieDetails;
+        (!error ? (movieDetails as TVMazeShow) : null);
+
+    if (error && !movie) {
+        return (
+            <SafeAreaView className="flex-1 bg-[#0A071E] items-center justify-center px-6">
+                <Text className="text-red-400 text-center text-[16px] mb-4">{error}</Text>
+                <TouchableOpacity
+                    activeOpacity={0.7}
+                    onPress={() => router.back()}
+                    className="px-5 py-2.5 bg-[#221F3D] rounded-lg border border-[#2E2854]"
+                >
+                    <Text className="text-white font-medium">Go Back</Text>
+                </TouchableOpacity>
+            </SafeAreaView>
+        );
+    }
+
+    if (!movie) {
+        return (
+            <SafeAreaView className="flex-1 bg-[#0A071E] items-center justify-center px-6">
+                <Text className="text-white text-center text-[16px] mb-4">Movie not found</Text>
+                <TouchableOpacity
+                    activeOpacity={0.7}
+                    onPress={() => router.back()}
+                    className="px-5 py-2.5 bg-[#221F3D] rounded-lg border border-[#2E2854]"
+                >
+                    <Text className="text-white font-medium">Go Back</Text>
+                </TouchableOpacity>
+            </SafeAreaView>
+        );
+    }
 
     // Clean HTML tags from TVMaze summary string
-    const cleanSummary = movie.summary 
-        ? movie.summary.replace(/<[^>]*>/g, '').trim() 
+    const cleanSummary = movie.summary
+        ? movie.summary.replace(/<[^>]*>/g, '').trim()
         : 'No overview available.';
 
     // Extract year from premiered date (e.g., '2013-06-24' -> '2013')
     const releaseYear = movie.premiered ? movie.premiered.split('-')[0] : '';
-    const platformName = movie.network?.name || (movie as any).webChannel?.name;
+    const platformName = movie.network?.name || movie.webChannel?.name;
+    const runtimeStr = movie.runtime || movie.averageRuntime ? `${movie.runtime || movie.averageRuntime}m` : null;
 
-    const posterUri = movie.image?.original || 
-        movie.image?.medium || 
+    const posterUri = movie.image?.original ||
+        movie.image?.medium ||
         (typeof movie.image === 'string' ? movie.image : null);
 
     return (
@@ -35,7 +119,7 @@ const MovieDetails = () => {
                 {/* 1. Header Banner Image with Floating Back Button */}
                 <View className='relative w-full h-[380px]'>
                     <Image
-                        source={posterUri ? { uri: posterUri } : icons.coverpic}
+                        source={posterUri ? { uri: posterUri } : icons.movieBg}
                         className='w-full h-full'
                         resizeMode='cover'
                     />
@@ -60,7 +144,7 @@ const MovieDetails = () => {
                     <Text className='text-[24px] font-bold text-white'>{movie.name}</Text>
 
                     <Text className='text-[#A8B5DB] text-[14px] mt-1.5 font-medium'>
-                        {[releaseYear, `${movie.runtime || movie.averageRuntime}m`, movie.language, movie.type]
+                        {[releaseYear, runtimeStr, movie.language, movie.type]
                             .filter(Boolean)
                             .join(' · ')}
                     </Text>
@@ -104,7 +188,61 @@ const MovieDetails = () => {
                     </Text>
                 </View>
 
-                {/* 4. Details Grid (Premiered, Status, Schedule, Ended) */}
+                {/* 4. Cast */}
+                {movieCast.length > 0 && (
+                    <View className='mt-7'>
+                        <View className='px-5 flex-row items-center justify-between mb-3'>
+                            <Text className='text-[15px] font-semibold text-[#A8B5DB]'>Cast</Text>
+                            <Text className='text-[12px] text-[#A8B5DB]/70'>{movieCast.length} members</Text>
+                        </View>
+
+                        <ScrollView
+                            horizontal
+                            showsHorizontalScrollIndicator={false}
+                            contentContainerStyle={{ paddingHorizontal: 20, gap: 14 }}
+                        >
+                            {movieCast.map((item, index) => {
+                                const actorImage = item.person.image?.medium || item.character.image?.medium;
+                                return (
+                                    <View
+                                        key={`${item.person.id}-${item.character?.id || ''}-${index}`}
+                                        className='w-[82px] items-center'
+                                    >
+                                        <View className='w-[70px] h-[70px] rounded-full overflow-hidden border border-[#2E2854] bg-[#221F3D] mb-2 items-center justify-center'>
+                                            {actorImage ? (
+                                                <Image
+                                                    source={{ uri: actorImage }}
+                                                    className='w-full h-full'
+                                                    resizeMode='cover'
+                                                />
+                                            ) : (
+                                                <View className='w-full h-full items-center justify-center bg-[#221F3D]'>
+                                                    <Text className='text-[#D6C7FF] font-bold text-[18px]'>
+                                                        {item.person.name?.charAt(0) || '?'}
+                                                    </Text>
+                                                </View>
+                                            )}
+                                        </View>
+                                        <Text
+                                            numberOfLines={1}
+                                            className='text-white text-[12px] font-semibold text-center w-full'
+                                        >
+                                            {item.person.name}
+                                        </Text>
+                                        <Text
+                                            numberOfLines={1}
+                                            className='text-[#A8B5DB] text-[11px] text-center w-full mt-0.5'
+                                        >
+                                            {item.character?.name}
+                                        </Text>
+                                    </View>
+                                );
+                            })}
+                        </ScrollView>
+                    </View>
+                )}
+
+                {/* 5. Details Grid (Premiered, Status, Schedule, Ended) */}
                 <View className='mx-5 my-6 p-4 rounded-xl bg-[#141030] border border-[#221F3D]'>
                     <View className='flex-row justify-between py-2 border-b border-white/5'>
                         <Text className='text-[13px] text-[#A8B5DB]'>Premiered</Text>
@@ -116,7 +254,7 @@ const MovieDetails = () => {
                         <Text className='font-semibold text-[13px] text-[#D6C7FF]'>{movie.status || 'N/A'}</Text>
                     </View>
 
-                    {movie.schedule?.days?.length > 0 && (
+                    {Boolean(movie.schedule?.days?.length) && movie.schedule && (
                         <View className='flex-row justify-between py-2 border-b border-white/5'>
                             <Text className='text-[13px] text-[#A8B5DB]'>Schedule</Text>
                             <Text className='font-semibold text-[13px] text-[#D6C7FF]'>
@@ -133,7 +271,7 @@ const MovieDetails = () => {
                     )}
                 </View>
 
-                {/* 5. Return Button */}
+                {/* 6. Return Button */}
                 <View className='px-5'>
                     <TouchableOpacity
                         activeOpacity={0.8}

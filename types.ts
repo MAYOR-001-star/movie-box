@@ -23,7 +23,7 @@ export interface TVMazeShow {
     status: string;
     runtime: number | null;
     averageRuntime?: number | null;
-    premiered: string;
+    premiered?: string | null;
     ended?: string | null;
     officialSite?: string | null;
     schedule?: {
@@ -50,15 +50,35 @@ export interface TVMazeShow {
         country?: any;
         officialSite?: string | null;
     } | null;
-    image: {
+    dvdCountry?: {
+        name: string;
+        code: string;
+        timezone: string;
+    } | null;
+    externals?: {
+        tvrage?: number | null;
+        thetvdb?: number | null;
+        imdb?: string | null;
+    };
+    image?: {
         medium: string;
         original: string;
-    };
-    summary: string;
+    } | null;
+    summary?: string | null;
     updated?: number;
+    _links?: {
+        self?: { href: string };
+        previousepisode?: { href: string; name?: string };
+        nextepisode?: { href: string; name?: string };
+    };
     savedAt?: string;
     // Hardcoded UI properties we cannot do without
     special?: boolean;
+}
+
+export interface TVMazeSearchResult {
+    score: number;
+    show: TVMazeShow;
 }
 
 export interface TVMazePerson {
@@ -74,8 +94,46 @@ export interface TVMazePerson {
     birthday?: string | null;
     deathday?: string | null;
     gender?: string;
-    image: {
+    image?: {
         medium: string;
         original: string;
+    } | null;
+}
+
+export interface TVMazeCastMember {
+    person: {
+        id: number;
+        url?: string;
+        name: string;
+        country?: {
+            name: string;
+            code: string;
+            timezone: string;
+        } | null;
+        birthday?: string | null;
+        deathday?: string | null;
+        gender?: string;
+        image?: {
+            medium: string;
+            original: string;
+        } | null;
+        updated?: number;
+        _links?: {
+            self?: { href: string };
+        };
     };
+    character: {
+        id: number;
+        url?: string;
+        name: string;
+        image?: {
+            medium: string;
+            original: string;
+        } | null;
+        _links?: {
+            self?: { href: string };
+        };
+    };
+    self: boolean;
+    voice: boolean;
 }

@@ -4,6 +4,7 @@ import { Image, Pressable, Text, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { cssInterop } from 'nativewind';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { TabsProps, TabsData } from '@/types';
 
 cssInterop(LinearGradient, {
     className: 'style',
@@ -50,7 +51,7 @@ export default function TabLayout() {
             tabBarShowLabel: false,
             tabBarButton: (props) => (
                 <Pressable
-                    {...props}
+                    {...(props as any)}
                     style={[
                         props.style,
                         {

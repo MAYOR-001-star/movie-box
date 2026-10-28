@@ -5,9 +5,10 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import Header from '@/src/components/Header'
 import MovieCard from '@/src/components/MovieCard'
 import { movies, moviesss } from '@/constants/data'
+import { TVMazeShow } from '@/types'
 
 const Index = () => {
-    const [moviesList, setMoviesList] = useState([]);
+    const [moviesList, setMoviesList] = useState<TVMazeShow[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -62,7 +63,7 @@ const Index = () => {
                 </Text>
 
                 <FlatList
-                    data={moviesss}
+                    data={moviesList.slice(0, 5)}
                     keyExtractor={(item) => item.id.toString()}
                     horizontal
                     showsHorizontalScrollIndicator={false}
@@ -70,8 +71,8 @@ const Index = () => {
                     contentContainerStyle={{
                         gap: 20,
                     }}
-                    renderItem={({ item }) => (
-                        <MovieCard item={item} />
+                    renderItem={({ item, index }) => (
+                        <MovieCard item={item} isPopular rank={index + 1} />
                     )}
                 />
             </View>
@@ -85,7 +86,7 @@ const Index = () => {
     return (
         <SafeAreaView className="flex-1 bg-[#030014]">
             <FlatList
-                data={movies}
+                data={moviesList.slice(0, 12)}
                 keyExtractor={(item) => item.id.toString()}
                 numColumns={3}
                 showsVerticalScrollIndicator={false}

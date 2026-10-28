@@ -5,21 +5,27 @@ import { View, Text, Image, Pressable } from 'react-native'
 interface Props {
     item: {
         id: number | string;
-        image?: string | { medium?: string; original?: string };
+        image?: string | { medium?: string; original?: string } | null;
         name: string;
         type?: string;
         language?: string;
         special?: boolean;
     };
+    isPopular?: boolean;
+    rank?: number;
 }
 
-const MovieCard = ({ item }: Props) => {
+const MovieCard = ({ item, isPopular, rank }: Props) => {
     const imageUri = typeof item.image === 'string'
         ? item.image
         : (item.image?.medium || item.image?.original || '');
 
+    const isPopularMovie = isPopular ?? item.special;
+    const rankNumber = rank !== undefined ? rank : item.id;
+
     return (
         <Pressable
+            className="w-[116px]"
             onPress={() =>
                 router.push({
                     pathname: '/movie/[id]',
@@ -33,13 +39,25 @@ const MovieCard = ({ item }: Props) => {
                     className="h-[167px] w-[116px] rounded-[5px]"
                     resizeMode="cover"
                 />
-                {item.special && <Text className='absolute -bottom-[5px] -left-[5px] text-[44px] text-white font-bold'>{item.id}</Text>}
+                {isPopularMovie && (
+                    <Text className='absolute -bottom-[5px] -left-[5px] text-[44px] text-white font-bold'>
+                        {rankNumber}
+                    </Text>
+                )}
             </View>
-            <Text className="my-[8px] text-white font-bold text-[13.5px]">
+            <Text
+                numberOfLines={1}
+                ellipsizeMode="tail"
+                className="my-[8px] text-white font-bold text-[13.5px] w-full"
+            >
                 {item.name}
             </Text>
-            <Text className="text-[#9CA4AB] text-[10px] font-medium">
-                {item.type} • {item.language}
+            <Text
+                numberOfLines={1}
+                ellipsizeMode="tail"
+                className="text-[#9CA4AB] text-[10px] font-medium w-full"
+            >
+                {[item.type, item.language].filter(Boolean).join(' • ')}
             </Text>
         </Pressable>
     )

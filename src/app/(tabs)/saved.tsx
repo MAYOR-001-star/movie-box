@@ -17,7 +17,7 @@ import { savedShows } from '@/constants/data';
 import type { TVMazeShow } from '@/types';
 
 // Clean HTML tags from TVMaze summary string
-const stripHtml = (html?: string) => {
+const stripHtml = (html?: string | null) => {
     if (!html) return '';
     return html.replace(/<[^>]*>/g, '').trim();
 };

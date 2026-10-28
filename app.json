@@ -10,7 +10,7 @@
     "splash": {
       "image": "./assets/images/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#030014"
+      "backgroundColor": "#b093ff"
     },
     "ios": {
       "icon": "./assets/images/icon.png"
@@ -20,7 +20,8 @@
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundColor": "#030014"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.mayorkun.moviebox"
     },
     "web": {
       "output": "static",
@@ -31,7 +32,7 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#030014",
+          "backgroundColor": "#b093ff",
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 150,
           "resizeMode": "contain"
@@ -41,6 +42,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "c9edeafe-cb8e-458f-8041-782119cfb1e9"
+      }
     }
   }
 }
